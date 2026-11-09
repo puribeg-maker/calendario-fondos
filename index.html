@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="es-CL">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>¿Cuándo abre tu fondo? Calendario de fondos para pymes</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,300..800&display=swap" rel="stylesheet">
+<style>
+:root{
+  --papel:#F2F4F6; --hoja:#FFFFFF; --tinta:#14213D; --tinta-2:#4A5873; --linea:#D5DBE3;
+  --resaltador:#FFE14D; --resaltador-tinta:#14213D; --alerta:#B4232C;
+  color-scheme: light;
+  box-sizing:border-box;
+  padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --papel:#0E1524; --hoja:#16203A; --tinta:#E7ECF4; --tinta-2:#A3B0C6; --linea:#2B3754;
+    --resaltador:#FFD83A; --resaltador-tinta:#14213D; --alerta:#FF8A8F; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --papel:#0E1524; --hoja:#16203A; --tinta:#E7ECF4; --tinta-2:#A3B0C6; --linea:#2B3754;
+  --resaltador:#FFD83A; --resaltador-tinta:#14213D; --alerta:#FF8A8F; color-scheme:dark;
+}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:var(--papel);color:var(--tinta);
+  font-family:"Archivo",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;font-size:1.0625rem;line-height:1.55;
+  font-variation-settings:"wdth" 100;-webkit-font-smoothing:antialiased}
+.envoltura{max-width:68rem;margin:0 auto;padding:0 1.25rem}
+a{color:inherit}
+:focus-visible{outline:3px solid var(--resaltador);outline-offset:2px;border-radius:2px}
+
+/* Cabecera */
+.cabecera{padding:3.5rem 0 2rem}
+.titulo{font-weight:800;font-variation-settings:"wdth" 125;font-size:clamp(2.4rem,7vw,4.6rem);line-height:.98;letter-spacing:-.02em;margin:0 0 1.25rem;max-width:14ch}
+.bajada{max-width:38rem;color:var(--tinta-2);margin:0;font-size:1.15rem}
+.bajada strong{color:var(--tinta);font-weight:600}
+
+/* Franja de meses: el elemento protagonista */
+.franja{display:grid;grid-template-columns:repeat(7,minmax(0,1fr));gap:.5rem;margin:2.5rem 0 0}
+.mes-btn{appearance:none;border:1.5px solid var(--linea);background:var(--hoja);color:var(--tinta);border-radius:6px;
+  padding:.7rem .6rem .6rem;text-align:left;cursor:pointer;font:inherit;display:flex;flex-direction:column;gap:.35rem;min-height:7.5rem}
+.mes-btn:hover{border-color:var(--tinta-2)}
+.mes-btn[aria-pressed="true"]{border-color:var(--tinta);box-shadow:inset 0 0 0 1px var(--tinta)}
+.mes-nombre{font-variation-settings:"wdth" 125;font-weight:700;font-size:1.05rem;text-transform:capitalize}
+.mes-anio{font-size:.8rem;color:var(--tinta-2)}
+.mes-conteo{margin-top:auto;font-variation-settings:"wdth" 70;font-weight:700;font-size:2rem;line-height:1}
+.mes-barra{height:6px;border-radius:3px;background:var(--linea);overflow:hidden}
+.mes-barra i{display:block;height:100%;background:var(--tinta)}
+.mes-btn.ahora .mes-barra i{background:var(--resaltador)}
+.leyenda-franja{font-size:.85rem;color:var(--tinta-2);margin:.6rem 0 0}
+
+/* Filtros */
+.filtros{position:sticky;top:0;z-index:5;background:var(--papel);border-bottom:1px solid var(--linea);
+  padding:calc(.8rem + env(safe-area-inset-top,0px)) 0 .8rem;margin-top:2rem}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--papel)}
+.filtros .envoltura{display:flex;flex-wrap:wrap;gap:.75rem 1.25rem;align-items:center}
+.campo{display:flex;align-items:center;gap:.5rem;font-size:.95rem}
+select{font:inherit;color:var(--tinta);background:var(--hoja);border:1.5px solid var(--linea);border-radius:6px;padding:.45rem 2rem .45rem .6rem;
+  appearance:none;background-image:linear-gradient(45deg,transparent 50%,var(--tinta-2) 50%),linear-gradient(135deg,var(--tinta-2) 50%,transparent 50%);
+  background-position:calc(100% - 15px) 55%,calc(100% - 10px) 55%;background-size:5px 5px;background-repeat:no-repeat}
+.interruptor{display:flex;align-items:center;gap:.5rem;cursor:pointer;font-size:.95rem}
+.interruptor input{width:1.1rem;height:1.1rem;accent-color:var(--tinta)}
+.resultado{margin-left:auto;font-size:.9rem;color:var(--tinta-2)}
+
+/* Atrasadas */
+.aviso{margin:2.25rem 0 0;background:var(--hoja);border:1.5px solid var(--linea);border-left:6px solid var(--resaltador);border-radius:6px;padding:1rem 1.25rem}
+.aviso h2{font-size:1.1rem;margin:0 0 .25rem}
+.aviso p{margin:0 0 .5rem;color:var(--tinta-2);font-size:.95rem}
+
+/* Lista por mes */
+.bloque-mes{margin:2.75rem 0 0}
+.bloque-mes>h2{font-variation-settings:"wdth" 125;font-weight:800;font-size:clamp(1.6rem,4vw,2.2rem);margin:0 0 .75rem;text-transform:capitalize;
+  display:flex;align-items:baseline;gap:.75rem;border-bottom:2px solid var(--tinta);padding-bottom:.35rem}
+.bloque-mes>h2 small{font-variation-settings:"wdth" 100;font-weight:400;font-size:.95rem;color:var(--tinta-2)}
+.fila{display:grid;grid-template-columns:5.5rem minmax(0,1fr) auto;gap:1rem;align-items:start;padding:1rem 0;border-bottom:1px solid var(--linea)}
+.dia{font-variation-settings:"wdth" 70;font-weight:700;font-size:2.4rem;line-height:.9}
+.dia span{display:block;font-variation-settings:"wdth" 100;font-weight:400;font-size:.8rem;color:var(--tinta-2);margin-top:.35rem}
+.dia mark{background:var(--resaltador);color:var(--resaltador-tinta);padding:0 .15em;border-radius:2px}
+.prog{font-weight:650;font-size:1.1rem;line-height:1.3;margin:0}
+.datos{display:flex;flex-wrap:wrap;gap:.25rem .9rem;margin:.3rem 0 0;font-size:.92rem;color:var(--tinta-2)}
+.datos a{text-underline-offset:2px}
+.monto{color:var(--tinta);font-weight:500}
+.evidencia{text-align:right;min-width:8.5rem}
+.etiqueta{display:inline-block;font-size:.82rem;font-weight:600;padding:.12rem .5rem;border-radius:4px;border:1.5px solid var(--tinta)}
+.etiqueta.alta{background:var(--tinta);color:var(--papel)}
+.etiqueta.baja{border-style:dashed;color:var(--tinta-2);border-color:var(--tinta-2)}
+.puntos{display:flex;gap:4px;justify-content:flex-end;margin-top:.5rem}
+.puntos i{width:9px;height:9px;border-radius:50%;border:1.5px solid var(--tinta-2)}
+.puntos i.si{background:var(--tinta);border-color:var(--tinta)}
+.anios{font-size:.75rem;color:var(--tinta-2);margin-top:.2rem}
+.vacio{padding:2rem 0;color:var(--tinta-2)}
+
+/* Método y contacto */
+.metodo{margin:4rem 0 0;display:grid;grid-template-columns:repeat(auto-fit,minmax(15rem,1fr));gap:1.5rem 2.5rem}
+.metodo h3{margin:0 0 .35rem;font-size:1.05rem}
+.metodo p{margin:0;color:var(--tinta-2);font-size:.95rem}
+.contacto{margin:4rem 0 0;padding:2.5rem 1.75rem;background:var(--tinta);color:var(--papel);border-radius:8px}
+.contacto h2{font-variation-settings:"wdth" 125;font-weight:800;font-size:clamp(1.8rem,5vw,2.8rem);line-height:1;margin:0 0 .75rem}
+.contacto p{margin:0 0 1.5rem;max-width:36rem;opacity:.85}
+.boton{display:inline-block;background:var(--resaltador);color:var(--resaltador-tinta);font-weight:700;text-decoration:none;padding:.85rem 1.4rem;border-radius:6px}
+.boton:hover{filter:brightness(.95)}
+.contacto-corto{margin:1.75rem 0 0;padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;gap:1rem 2rem;flex-wrap:wrap}
+.contacto-corto p{margin:0;max-width:40rem;opacity:.9}
+.contacto-corto p strong{font-weight:700;opacity:1}
+.pie{padding:2rem 0 3rem;font-size:.85rem;color:var(--tinta-2)}
+
+@media (max-width:760px){
+  .franja{grid-template-columns:repeat(7,minmax(4.6rem,1fr));overflow-x:auto;padding-bottom:.4rem}
+  .mes-btn{min-height:6.5rem}
+  .fila{grid-template-columns:4rem minmax(0,1fr)}
+  .evidencia{grid-column:2;text-align:left;display:flex;align-items:center;gap:.75rem;flex-wrap:wrap}
+  .puntos{justify-content:flex-start;margin:0}
+  .anios{margin:0}
+  .resultado{margin-left:0;width:100%}
+}
+@media (prefers-reduced-motion:no-preference){
+  .mes-barra i{transition:width .6s ease}
+}
+</style>
+</head>
+<body>
+<header class="envoltura cabecera">
+  <h1 class="titulo">¿Cuándo abre el fondo que necesitas?</h1>
+  <p class="bajada">Los fondos para pymes y startups suelen abrir en fechas parecidas cada año, y las postulaciones duran apenas 2 a 4 semanas. Estimamos la próxima apertura de <strong id="total-fondos">—</strong> convocatorias según cuándo abrieron entre 2021 y 2026, para que prepares tu postulación antes y no la última semana.</p>
+  <div class="franja" id="franja" role="group" aria-label="Filtrar por mes"></div>
+  <p class="leyenda-franja" id="leyenda-franja">Toca un mes para ver solo esas aperturas.</p>
+</header>
+
+<div class="envoltura">
+  <aside class="contacto contacto-corto" aria-label="Contacto">
+    <p><strong>¿Quieres llegar preparado a la próxima apertura?</strong> Revisamos a qué fondos califica tu empresa y armamos tu postulación con anticipación.</p>
+    <a class="boton" href="mailto:puribeg@gmail.com?subject=Quiero%20preparar%20mi%20postulaci%C3%B3n%20a%20un%20fondo">Hablemos</a>
+  </aside>
+</div>
+
+<div class="filtros">
+  <div class="envoltura">
+    <label class="campo">Región
+      <select id="f-region"><option value="">Todas</option></select>
+    </label>
+    <label class="campo">Institución
+      <select id="f-inst"><option value="">Todas</option></select>
+    </label>
+    <label class="interruptor"><input type="checkbox" id="f-baja"> Incluir estimaciones con poca historia</label>
+    <span class="resultado" id="resultado" aria-live="polite"></span>
+  </div>
+</div>
+
+<main class="envoltura">
+  <section class="aviso" id="aviso" hidden>
+    <h2>Según su historial, ya deberían haber abierto</h2>
+    <p>Estos fondos solían abrir antes de esta fecha y todavía no los vemos publicados. Pueden salir en cualquier momento.</p>
+    <div id="lista-atrasadas"></div>
+  </section>
+  <div id="lista"></div>
+
+  <section class="metodo" aria-label="Cómo se calcula">
+    <div><h3>De dónde salen las fechas</h3><p>Reunimos las aperturas de cada fondo entre 2021 y 2026 desde sus convocatorias oficiales y prensa, y calculamos la fecha típica de apertura. Los puntos muestran en qué años vimos abrir cada fondo.</p></div>
+    <div><h3>Qué significa la confianza</h3><p>Alta: abrió en fechas parecidas al menos 3 años. Media: hay 2 años de historia o más variación. Baja: un solo año observado; tómala como referencia.</p></div>
+    <div><h3>Es una estimación</h3><p>Las fechas oficiales las define cada institución y pueden cambiar. Revisa siempre las bases vigentes antes de postular.</p></div>
+  </section>
+
+  <section class="contacto" id="hablemos">
+    <h2>Prepara tu postulación antes de que abra</h2>
+    <p>Revisamos a qué fondos califica tu empresa, armamos la carpeta con anticipación y te acompañamos en la postulación, desde el presupuesto hasta el formulario.</p>
+    <a class="boton" href="mailto:puribeg@gmail.com?subject=Quiero%20preparar%20mi%20postulaci%C3%B3n%20a%20un%20fondo">Hablemos</a>
+  </section>
+</main>
+<footer class="envoltura pie">Actualizado el 9 de noviembre de 2026. Estimaciones propias a partir de convocatorias públicas; no es información oficial de las instituciones.</footer>
+
+<script>
+const DATOS = [{"p": "Innova Región", "r": "Nacional", "i": "CORFO", "f": "2026-10-04", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/nacional/10_10_2024_calendario-convocatorias-innovacion-2024-2025/", "d": 61}, {"p": "Crea y Valida", "r": "Nacional", "i": "CORFO", "f": "2026-10-27", "v": 15, "c": "alta", "a": [2021, 2022, 2024, 2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/programa/crea-y-valida/", "d": 60}, {"p": "PAR, Apoyo a la Reactivación", "r": "Coquimbo", "i": "CORFO", "f": "2026-11-10", "v": 10, "c": "alta", "a": [2021, 2022, 2023, 2024, 2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/par-coquimbo-convocatoria-turismo-zonas-rezagadas-2025/", "d": 26}, {"p": "Semilla Inicia", "r": "Nacional", "i": "CORFO", "f": "2026-11-21", "v": 7, "c": "media", "a": [2022, 2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-2025/", "d": 28}, {"p": "PAR, Apoyo a la Reactivación", "r": "O'Higgins", "i": "CORFO", "f": "2026-11-22", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://corfo.cl/sites/cpp/movil/par", "d": 7}, {"p": "Consolida y Expande", "r": "Nacional", "i": "CORFO", "f": "2026-11-22", "v": 14, "c": "media", "a": [2022, 2024], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/consolida_y_expande_innova/", "d": 55}, {"p": "PAR, Apoyo a la Reactivación", "r": "Ñuble", "i": "CORFO", "f": "2026-11-30", "v": 20, "c": "media", "a": [2021, 2024], "m": "", "u": "https://corfo.cl/sites/cpp/movil/par", "d": 35}, {"p": "Semilla Expande", "r": "Nacional", "i": "CORFO", "f": "2026-12-02", "v": 8, "c": "media", "a": [2022, 2024], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/expande/", "d": 35}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Ñuble", "i": "CORFO", "f": "2026-12-20", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://corfo.cl/sites/cpp/movil/desarrolla-inversion-productiva", "d": 35}, {"p": "Semilla Inicia", "r": "O'Higgins", "i": "CORFO", "f": "2026-12-24", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://www.corfo.cl/sites/cpp/movil/semilla-inicia", "d": 67}, {"p": "FRPD, Fondo Regional para la Productividad", "r": "Atacama", "i": "GORE Atacama", "f": "2027-01-12", "v": 7, "c": "baja", "a": [2026], "m": "Hasta $500.000.000", "u": "https://fondos.gob.cl/ficha/goreatacama/frpd2025atacama/", "d": 42}, {"p": "Semilla Expande", "r": "Nacional", "i": "CORFO", "f": "2027-01-15", "v": 7, "c": "alta", "a": [2021, 2022, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-expande-2026/", "d": 52}, {"p": "PAR, Apoyo a la Reactivación", "r": "Ñuble", "i": "CORFO", "f": "2027-01-15", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://www.entnerd.com/nuble-abre-convocatorias-por-2400-millones-para-fortalecer-la-inversion-el-turismo-en-empresas-y-emprendedores/", "d": 34}, {"p": "SIRSD-S Sistema de Incentivos para la Sustentabilidad Agroambiental de los Suelos Agropecuarios", "r": "Atacama", "i": "SAG", "f": "2027-01-20", "v": 7, "c": "baja", "a": [2024], "m": "Hasta 160 UTM", "u": "https://fondos.gob.cl/ficha/sag/atacama-sirsd-s/", "d": 86}, {"p": "Consolida y Expande", "r": "Nacional", "i": "CORFO", "f": "2027-01-22", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://postulaciones.corfo.cl/sites/cpp/movil/consolida-y-expande", "d": 50}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Arica y Parinacota", "i": "CORFO", "f": "2027-02-09", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://gorearicayparinacota.cl/goreayp/site/artic/20260319/pags/20260319152412.html", "d": 43}, {"p": "PAMMA Inicia Productivo", "r": "Nacional", "i": "Min. Minería", "f": "2027-02-12", "v": 7, "c": "baja", "a": [2026], "m": "Hasta $10.000.000", "u": "https://fondos.gob.cl/ficha/minmineria/pamma-inicia-prod-2026/", "d": 18}, {"p": "Semilla Expande", "r": "O'Higgins", "i": "CORFO", "f": "2027-02-15", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://vi.cl/2026/02/corfo-ohiggins-abre-convocatorias-2026-de-semilla-inicia-y-semilla-expande-para-impulsar-emprendimientos-innovadores-en-la-region/", "d": 43}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "La Araucanía", "i": "CORFO", "f": "2027-02-17", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/desarrolla-inversion-productiva", "d": 72}, {"p": "Semilla Inicia", "r": "Los Lagos", "i": "CORFO", "f": "2027-02-17", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-los-lagos-2026/", "d": 63}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Metropolitana", "i": "CORFO", "f": "2027-02-18", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://www.reporteminero.cl/noticia/noticias/2026/02/corfo-metropolitano-convocatorias-419-millones-desarrollo-productivo", "d": null}, {"p": "Fortalecimiento y Creación de Empresas Sociales y Cooperativas", "r": "Nacional", "i": "Sercotec", "f": "2027-02-28", "v": 7, "c": "baja", "a": [2024], "m": "$8.000.000 a $20.000.000", "u": "https://fondos.gob.cl/ficha/sercotec/fcesc/", "d": 5}, {"p": "Semilla Inicia", "r": "Magallanes", "i": "CORFO", "f": "2027-03-02", "v": 7, "c": "media", "a": [2024, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/programa/semilla-inicia/", "d": 33}, {"p": "Semilla Inicia", "r": "Arica y Parinacota", "i": "CORFO", "f": "2027-03-05", "v": 7, "c": "media", "a": [2024, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-cdpr-arica-y-parinacota-2026/", "d": 31}, {"p": "SIRSD-S Sistema de Incentivos para la Sustentabilidad Agroambiental de los Suelos Agropecuarios", "r": "Nacional", "i": "SAG", "f": "2027-03-06", "v": 7, "c": "baja", "a": [2024], "m": "Hasta $10.346.560", "u": "https://fondos.gob.cl/ficha/sag/sirsd-s-sag/", "d": 42}, {"p": "Semilla Inicia", "r": "Coquimbo", "i": "CORFO", "f": "2027-03-06", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://postulaciones.corfo.cl/sites/cpp/convocatorias/semilla_inicia", "d": 35}, {"p": "Semilla Inicia", "r": "O'Higgins", "i": "CORFO", "f": "2027-03-07", "v": 22, "c": "media", "a": [2024, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-ohiggins-2026/", "d": 35}, {"p": "Semilla Inicia", "r": "Maule", "i": "CORFO", "f": "2027-03-15", "v": 9, "c": "media", "a": [2024, 2025], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/semilla-inicia", "d": 40}, {"p": "Red Tecnológica GTT+", "r": "Ñuble", "i": "CORFO", "f": "2027-03-15", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://legales.cooperativa.cl/wp-content/uploads/2026/03/VERSI%C3%93N-IMPRESA-INFORMA-APERTURA-DE-CONVOCATORIA.pdf", "d": null}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Tarapacá", "i": "CORFO", "f": "2027-03-18", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/desarrolla-inversion-productiva", "d": 2}, {"p": "Innova Región", "r": "Los Lagos", "i": "CORFO", "f": "2027-03-18", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/innova_region_los_lagos/", "d": 72}, {"p": "Semilla Inicia", "r": "Ñuble", "i": "CORFO", "f": "2027-03-18", "v": 22, "c": "media", "a": [2025, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/programa/semilla-inicia/", "d": 44}, {"p": "Semilla Inicia", "r": "Tarapacá", "i": "CORFO", "f": "2027-03-19", "v": 21, "c": "media", "a": [2025, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-tarapaca-2026/", "d": 35}, {"p": "Semilla Expande", "r": "Maule", "i": "CORFO", "f": "2027-03-25", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-expande-cdpr-maule-2025/", "d": 45}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Maule", "i": "CORFO", "f": "2027-03-25", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/desarrolla-inversion-productiva", "d": 10}, {"p": "Semilla Inicia", "r": "Nacional", "i": "CORFO", "f": "2027-03-28", "v": 35, "c": "media", "a": [2021, 2022, 2023, 2024, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-empresas-lideradas-por-mujeres-2026/", "d": 34}, {"p": "Emprendamos", "r": "Nacional", "i": "FOSIS", "f": "2027-03-28", "v": 7, "c": "baja", "a": [2024], "m": "$450.000", "u": "https://fondos.gob.cl/ficha/fosis/pes/", "d": 14}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Valparaíso", "i": "CORFO", "f": "2027-04-01", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/desarrolla-inversion-productiva-valparaiso-1ra-2025/", "d": 70}, {"p": "FRPD, Fondo Regional para la Productividad", "r": "Antofagasta", "i": "GORE Antofagasta", "f": "2027-04-02", "v": 7, "c": "baja", "a": [2026], "m": "$400 millones a $2.500 millones", "u": "https://fondos.gob.cl/ficha/goreantofagasta/frpd2026antofagasta/", "d": 32}, {"p": "Red Tecnológica GTT+", "r": "Maule", "i": "CORFO", "f": "2027-04-08", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://chileemprende.economia.gob.cl/instrumentos-de-fomento/red-tecnologica-gtt-region-del-maule-1-convocatoria-2025-etapa-desarrollo/", "d": 45}, {"p": "Crea y Valida", "r": "Nacional", "i": "CORFO", "f": "2027-04-10", "v": 39, "c": "media", "a": [2021, 2022, 2023, 2024, 2025, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/programa/crea-y-valida/", "d": 63}, {"p": "Semilla Expande", "r": "Tarapacá", "i": "CORFO", "f": "2027-04-10", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/semilla-expande", "d": 42}, {"p": "Programa Desarrollo de Ferias Libres", "r": "Nacional", "i": "Sercotec", "f": "2027-04-13", "v": 7, "c": "baja", "a": [2024], "m": "Hasta $30.000.000", "u": "https://fondos.gob.cl/ficha/sercotec/pdfl/", "d": 31}, {"p": "Capital Semilla Emprende", "r": "Nacional", "i": "Sercotec", "f": "2027-04-14", "v": 15, "c": "alta", "a": [2021, 2023, 2024, 2025, 2026], "m": "", "u": "https://www.ventanillaunicasocial.gob.cl/ficha/165/capital-semilla-emprende", "d": 13}, {"p": "Start-Up Chile Growth", "r": "Nacional", "i": "CORFO", "f": "2027-04-15", "v": 7, "c": "alta", "a": [2021, 2022, 2023, 2024, 2025, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/nacional/aceleradora-start-up-chile-abre-nueva-convocatoria-para-emprendimientos-tecnologicos-de-todo-el-mundo/", "d": 22}, {"p": "Start-Up Chile Build", "r": "Nacional", "i": "CORFO", "f": "2027-04-16", "v": 7, "c": "alta", "a": [2022, 2023, 2024, 2025, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/start-up-chile-build-12-2026/", "d": 21}, {"p": "Start-Up Chile Ignite", "r": "Nacional", "i": "CORFO", "f": "2027-04-16", "v": 7, "c": "alta", "a": [2022, 2023, 2024, 2025, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/start-up-chile-ignite-12-2026/", "d": 21}, {"p": "PAR, Apoyo a la Reactivación", "r": "Atacama", "i": "CORFO", "f": "2027-04-18", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/par-atacama-convocatoria2024industriascrea/", "d": 15}, {"p": "Semilla Inicia", "r": "Metropolitana", "i": "CORFO", "f": "2027-04-30", "v": 7, "c": "alta", "a": [2024, 2025, 2026], "m": "", "u": "https://revistaemprende.cl/corfo-convocatorias-2026/", "d": 24}, {"p": "PAR, Apoyo a la Reactivación", "r": "Aysén", "i": "CORFO", "f": "2027-05-04", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/par-aysen-1-convocatoria-litoral-de-aysen-2026/", "d": 25}, {"p": "Consolida y Expande", "r": "Nacional", "i": "CORFO", "f": "2027-05-05", "v": 12, "c": "alta", "a": [2023, 2024, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatorias_programas_innovacion/", "d": 44}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Ñuble", "i": "CORFO", "f": "2027-05-08", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/desarrolla-inversion-productiva-nuble-primera-convocatoria-2024/", "d": 52}, {"p": "Semilla Inicia", "r": "Magallanes", "i": "CORFO", "f": "2027-05-09", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-magallanes-2025/", "d": 34}, {"p": "Semilla Expande", "r": "Magallanes", "i": "CORFO", "f": "2027-05-09", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-expande-magallanes-2025/", "d": 34}, {"p": "Red Tecnológica GTT+", "r": "Nacional", "i": "CORFO", "f": "2027-05-10", "v": 7, "c": "baja", "a": [2024], "m": "Hasta $3.500.000", "u": "https://fondos.gob.cl/ficha/corfo/gtt/", "d": 62}, {"p": "Semilla Inicia", "r": "Biobío", "i": "CORFO", "f": "2027-05-11", "v": 20, "c": "alta", "a": [2021, 2023, 2024, 2025, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-biobio-2026/", "d": 39}, {"p": "Red Tecnológica GTT+", "r": "La Araucanía", "i": "CORFO", "f": "2027-05-11", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://legales.cooperativa.cl/wp-content/uploads/2026/05/VERSI%C3%93N-IMPRESA-APERTURA-DE-CONCURSO.pdf", "d": 35}, {"p": "Semilla Inicia", "r": "Coquimbo", "i": "CORFO", "f": "2027-05-12", "v": 7, "c": "media", "a": [2025, 2026], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/semilla-inicia", "d": 27}, {"p": "Semilla Inicia", "r": "Maule", "i": "CORFO", "f": "2027-05-14", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/semilla-inicia", "d": 21}, {"p": "SIRSD-S Sistema de Incentivos para la Sustentabilidad Agroambiental de los Suelos Agropecuarios", "r": "La Araucanía", "i": "SAG", "f": "2027-05-14", "v": 7, "c": "baja", "a": [2024], "m": "Desde $10.346.560", "u": "https://fondos.gob.cl/ficha/sag/gssa2024/", "d": 28}, {"p": "Emergencia Agrícola Incendios Forestales", "r": "Nacional", "i": "SAG", "f": "2027-05-14", "v": 7, "c": "baja", "a": [2024], "m": "Desde $10.346.560", "u": "https://fondos.gob.cl/ficha/sag/ceaif2024/", "d": 28}, {"p": "Conservación de Suelos y Aseguramiento Alimentario", "r": "Biobío", "i": "SAG", "f": "2027-05-14", "v": 7, "c": "baja", "a": [2024], "m": "Hasta 160 UTM", "u": "https://fondos.gob.cl/ficha/sag/csaat-biobio/", "d": 42}, {"p": "Emergencia Agrícola Incendios Forestales", "r": "Biobío", "i": "SAG", "f": "2027-05-14", "v": 7, "c": "baja", "a": [2024], "m": "Hasta 160 UTM", "u": "https://fondos.gob.cl/ficha/sag/ei2023biobio/", "d": 42}, {"p": "Crece", "r": "Nacional", "i": "Sercotec", "f": "2027-05-15", "v": 25, "c": "media", "a": [2022, 2023, 2024, 2025, 2026], "m": "", "u": "https://www.itvpatagonia.com/noticias/regional/29-05-2026/sercotec-abre-postulaciones-al-fondo-crece-2026-con-33-cupos-para-emprendedores-de-magallanes/", "d": 14}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Atacama", "i": "CORFO", "f": "2027-05-15", "v": 13, "c": "alta", "a": [2024, 2025, 2026], "m": "Hasta 60%, tope $20M", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/desarrolla-inversion-productiva-atacama-2-conv-productores-de-pisco-y-pajarete-2026/", "d": 40}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Arica y Parinacota", "i": "CORFO", "f": "2027-05-16", "v": 7, "c": "alta", "a": [2023, 2024, 2025, 2026], "m": "", "u": "https://gorearicayparinacota.cl/goreayp/site/artic/20260518/pags/20260518223718.html", "d": 40}, {"p": "Semilla Inicia", "r": "La Araucanía", "i": "CORFO", "f": "2027-05-19", "v": 7, "c": "baja", "a": [2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-la-araucania-2026/", "d": 35}, {"p": "Semilla Expande", "r": "La Araucanía", "i": "CORFO", "f": "2027-05-20", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/semilla-expande", "d": 34}, {"p": "Semilla Expande", "r": "Nacional", "i": "CORFO", "f": "2027-05-22", "v": 40, "c": "media", "a": [2021, 2022, 2023, 2024, 2025, 2026], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-expande-empresas-lideradas-por-mujeres-2026/", "d": 29}, {"p": "Semilla Inicia", "r": "Arica y Parinacota", "i": "CORFO", "f": "2027-05-23", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/semilla-inicia", "d": 35}, {"p": "PAR, Apoyo a la Reactivación", "r": "Nacional", "i": "CORFO", "f": "2027-05-23", "v": 7, "c": "baja", "a": [2024], "m": "Hasta $2.000.000", "u": "https://fondos.gob.cl/ficha/corfo/par/", "d": 56}, {"p": "Semilla Expande", "r": "Valparaíso", "i": "CORFO", "f": "2027-05-25", "v": 11, "c": "media", "a": [2024, 2026], "m": "", "u": "https://www.corfo.cl/sites/cpp/inf/semilla-expande", "d": 31}, {"p": "FNDR Productividad y Equipamiento Minero", "r": "Coquimbo", "i": "Min. Minería", "f": "2027-05-25", "v": 14, "c": "baja", "a": [2026], "m": "Hasta $6.000.000", "u": "https://fondos.gob.cl/ficha/minmineria/choapa/", "d": 18}, {"p": "Semilla Inicia", "r": "Atacama", "i": "CORFO", "f": "2027-05-26", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-atacama-2025/", "d": 22}, {"p": "Red Tecnológica GTT+", "r": "O'Higgins", "i": "CORFO", "f": "2027-05-30", "v": 15, "c": "media", "a": [2023, 2026], "m": "", "u": "https://legales.cooperativa.cl/wp-content/uploads/2026/05/VERSI%C3%93N-IMPRESA-CONVOCATORIA-INSTRUMENTO-DE-APOYO.pdf", "d": 14}, {"p": "Red Mercados", "r": "Nacional", "i": "CORFO", "f": "2027-06-01", "v": 7, "c": "baja", "a": [2024], "m": "Hasta $40.000.000", "u": "https://fondos.gob.cl/ficha/corfo/red-mercados/", "d": 61}, {"p": "Viraliza", "r": "Nacional", "i": "CORFO", "f": "2027-06-01", "v": 7, "c": "baja", "a": [2024], "m": "Hasta $50.000.000", "u": "https://fondos.gob.cl/ficha/corfo/viraliza/", "d": 31}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Valparaíso", "i": "CORFO", "f": "2027-06-03", "v": 11, "c": "media", "a": [2024, 2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/desarrolla-inversion-productiva-valparaiso-gestion-hidrica-2025/", "d": 39}, {"p": "Innova Región", "r": "Metropolitana", "i": "CORFO", "f": "2027-06-03", "v": 7, "c": "baja", "a": [2025], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/innova-region-cdpr-metropolitano-2025/", "d": 49}, {"p": "Súmate a Innovar", "r": "Nacional", "i": "CORFO", "f": "2027-06-05", "v": 7, "c": "baja", "a": [2024], "m": "Hasta $10.000.000", "u": "https://fondos.gob.cl/ficha/corfo/sumate_a_innovar/", "d": 50}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Nacional", "i": "CORFO", "f": "2027-06-07", "v": 7, "c": "baja", "a": [2024], "m": "Hasta $50.000.000", "u": "https://fondos.gob.cl/ficha/corfo/inversion-productiva/", "d": 51}, {"p": "Semilla Inicia", "r": "Tarapacá", "i": "CORFO", "f": "2027-06-07", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://www.corfo.gob.cl/sites/cpp/convocatoria/semilla-inicia-region-tarapaca/", "d": 28}, {"p": "Desarrollo Inversión: Inversión Productiva", "r": "Tarapacá", "i": "CORFO", "f": "2027-06-07", "v": 7, "c": "baja", "a": [2024], "m": "", "u": "https://corfo.cl/sites/cpp/movil/desarrolla-inversion-productiva", "d": 85}, {"p": "FRPD, Fondo Regional para la Productividad", "r": "Arica y Parinacota", "i": "GORE Arica y Parinacota", "f": "2027-06-08", "v": 7, "c": "baja", "a": [2026], "m": "Hasta $300.000.000", "u": "https://fondos.gob.cl/ficha/gorearica/frpd2026arica/", "d": 16}];
+const HOY = new Date(); HOY.setHours(0,0,0,0);
+const ORDEN_REG = ["Nacional","Arica y Parinacota","Tarapacá","Antofagasta","Atacama","Coquimbo","Valparaíso","Metropolitana","O'Higgins","Maule","Ñuble","Biobío","La Araucanía","Los Ríos","Los Lagos","Aysén","Magallanes"];
+const fmtMes = new Intl.DateTimeFormat("es-CL",{month:"long"});
+const fmtMesCorto = new Intl.DateTimeFormat("es-CL",{month:"short"});
+const fecha = s => { const [y,m,d] = s.split("-").map(Number); return new Date(y,m-1,d); };
+const dias = d => Math.round((fecha(d.f) - HOY)/864e5);
+const esc = s => String(s).replace(/[&<>"]/g, c => ({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+
+const estado = {mes:"", region:"", inst:"", baja:false};
+
+// Meses: del actual a 6 meses más
+const meses = [];
+for (let k=0;k<7;k++){ const d=new Date(HOY.getFullYear(),HOY.getMonth()+k,1); meses.push({clave:`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}`, d}); }
+
+// Selectores
+const regiones = [...new Set(DATOS.map(d=>d.r))].sort((a,b)=>(ORDEN_REG.indexOf(a)+99*(ORDEN_REG.indexOf(a)<0))-(ORDEN_REG.indexOf(b)+99*(ORDEN_REG.indexOf(b)<0)));
+for (const r of regiones){ const o=document.createElement("option"); o.value=r; o.textContent = r==="Nacional" ? "Nacionales" : r; document.getElementById("f-region").append(o); }
+const insts = [...new Set(DATOS.map(d=>d.i))].sort();
+for (const i of insts){ const o=document.createElement("option"); o.value=i; o.textContent=i; document.getElementById("f-inst").append(o); }
+
+function filtrar(ignorarMes){
+  return DATOS.filter(d =>
+    (estado.baja || d.c !== "baja") &&
+    (!estado.region || d.r === estado.region || (estado.region !== "Nacional" && d.r === "Nacional")) &&
+    (!estado.inst || d.i === estado.inst) &&
+    (ignorarMes || !estado.mes || d.f.startsWith(estado.mes)));
+}
+
+function puntos(anios){
+  let h='<div class="puntos" aria-hidden="true">';
+  for (let y=2021;y<=2026;y++) h+=`<i class="${anios.includes(y)?"si":""}" title="${y}"></i>`;
+  return h+"</div>";
+}
+
+function fila(d){
+  const f=fecha(d.f), n=dias(d), pronto = n>=0 && n<=30;
+  const diaTxt = pronto ? `<mark>${f.getDate()}</mark>` : f.getDate();
+  const cuando = n<0 ? "pendiente" : n===0 ? "hoy" : n===1 ? "en 1 día" : `en ${n} días`;
+  const conf = {alta:"Confianza alta",media:"Confianza media",baja:"Confianza baja"}[d.c];
+  const region = d.r==="Nacional" ? "Nacional" : `Región ${d.r}`;
+  return `<article class="fila">
+    <div class="dia">${diaTxt}<span>${fmtMesCorto.format(f).replace(".","")} ± ${d.v} días</span></div>
+    <div>
+      <h3 class="prog">${esc(d.p)}</h3>
+      <p class="datos"><span>${esc(d.i)}</span><span>${esc(region)}</span>${d.m?`<span class="monto">${esc(d.m)}</span>`:""}<span>${cuando}</span>${d.u?`<a href="${esc(d.u)}" target="_blank" rel="noopener">Última convocatoria</a>`:""}</p>
+    </div>
+    <div class="evidencia"><span class="etiqueta ${d.c}">${conf}</span>${puntos(d.a)}<div class="anios">${d.a.length} ${d.a.length===1?"año":"años"} observados</div></div>
+  </article>`;
+}
+
+function render(){
+  const todos = filtrar(true);
+  // Franja
+  const franja = document.getElementById("franja"); franja.innerHTML="";
+  const conteos = meses.map(m => todos.filter(d=>d.f.startsWith(m.clave) && dias(d)>=0).length);
+  const max = Math.max(1,...conteos);
+  meses.forEach((m,k)=>{
+    const b=document.createElement("button");
+    b.className="mes-btn"+(k===0?" ahora":""); b.type="button";
+    b.setAttribute("aria-pressed", String(estado.mes===m.clave));
+    b.innerHTML=`<span class="mes-nombre">${fmtMes.format(m.d)}</span><span class="mes-anio">${m.d.getFullYear()}</span><span class="mes-conteo">${conteos[k]}</span><span class="mes-barra"><i style="width:${Math.round(conteos[k]/max*100)}%"></i></span>`;
+    b.setAttribute("aria-label", `${fmtMes.format(m.d)} ${m.d.getFullYear()}: ${conteos[k]} aperturas estimadas`);
+    b.onclick=()=>{ estado.mes = estado.mes===m.clave ? "" : m.clave; render(); };
+    franja.append(b);
+  });
+  document.getElementById("leyenda-franja").textContent = estado.mes ? "Mostrando un solo mes. Tócalo de nuevo para ver todos." : "Toca un mes para ver solo esas aperturas.";
+
+  // Atrasadas
+  const atrasadas = todos.filter(d=>dias(d)<0);
+  document.getElementById("aviso").hidden = atrasadas.length===0 || !!estado.mes;
+  document.getElementById("lista-atrasadas").innerHTML = atrasadas.map(fila).join("");
+
+  // Lista por mes
+  const visibles = filtrar(false).filter(d=>dias(d)>=0);
+  const cont = document.getElementById("lista"); cont.innerHTML="";
+  for (const m of meses){
+    const items = visibles.filter(d=>d.f.startsWith(m.clave));
+    if (!items.length) continue;
+    const sec=document.createElement("section"); sec.className="bloque-mes";
+    sec.innerHTML=`<h2>${fmtMes.format(m.d)} ${m.d.getFullYear()} <small>${items.length} ${items.length===1?"apertura":"aperturas"}</small></h2>`+items.map(fila).join("");
+    cont.append(sec);
+  }
+  if (!cont.children.length) cont.innerHTML=`<p class="vacio">No hay aperturas estimadas con estos filtros. Prueba con otra región o incluye las estimaciones con poca historia.</p>`;
+  const n = visibles.length + (estado.mes?0:atrasadas.length);
+  document.getElementById("resultado").textContent = `${n} ${n===1?"fondo":"fondos"} con estos filtros`;
+}
+
+document.getElementById("total-fondos").textContent = DATOS.filter(d=>d.c!=="baja").length;
+document.getElementById("f-region").onchange=e=>{estado.region=e.target.value;render();};
+document.getElementById("f-inst").onchange=e=>{estado.inst=e.target.value;render();};
+document.getElementById("f-baja").onchange=e=>{estado.baja=e.target.checked;
+  document.getElementById("total-fondos").textContent = DATOS.filter(d=>estado.baja||d.c!=="baja").length; render();};
+render();
+</script>
+</body>
+</html>
